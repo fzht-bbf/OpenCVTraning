@@ -148,10 +148,12 @@
     <ClCompile Include="src\utils\ImgShower.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\utils\VideoPlayer.cpp" />
+    <ClCompile Include="src\utils\VideoWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\utils\ImgShower.h" />
     <ClInclude Include="include\utils\VideoPlayer.h" />
+    <ClInclude Include="include\utils\VideoWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

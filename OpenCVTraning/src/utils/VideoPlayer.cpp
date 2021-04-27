@@ -24,11 +24,15 @@ bool VideoPlayer::Play() {
     while (true) {
         if (run_mode_ != 0) {
             (*cap_ptr_) >> frame;
-            if (frame.empty()) break; // end of video
+            if (frame.empty()) break;  // end of video
             int current_pos = (int)cap_ptr_->get(cv::CAP_PROP_POS_FRAMES);
             dontset_ = 1;
 
             cv::setTrackbarPos(track_bar_name_, window_name_, current_pos);
+
+            // 处理当前frame
+            ProcessCurrentFrame(frame);
+
             cv::imshow(window_name_, frame);
 
             run_mode_ -= 1;  // step by step, if running_ > 0
@@ -38,17 +42,47 @@ bool VideoPlayer::Play() {
         if (pressed_key == 's') {  // single step
             run_mode_ = 1;
             std::cout << "switch to SINGLE STEP mode" << std::endl;
-        }else if (pressed_key == 'r') {
+        } else if (pressed_key == 'r') {
             run_mode_ = -1;
             std::cout << "switch RUN mode" << std::endl;
         } else if (pressed_key == 27) {
             std::cout << "END PLAY" << std::endl;
             break;
         }
-
     }
 
     return true;
+}
+
+void VideoPlayer::ProcessCurrentFrame(cv::Mat& frame) {
+    //frame = std::move(BlurThisFrame(frame));
+    frame = std::move(DetectEdge(frame));
+    return;
+}
+
+cv::Mat VideoPlayer::BlurThisFrame(const cv::Mat& frame) {
+    cv::Mat out1, out2;
+    // TODO: GaussianBlur里面的sigmaX和sigmaY两个参数是什么含义？
+    cv::GaussianBlur(frame, out1, cv::Size(5, 5), 3, 3);
+    cv::GaussianBlur(out1, out2, cv::Size(5, 5), 3, 3);
+
+    cv::Mat out;
+    cv::hconcat(out1, out2, out);
+    cv::hconcat(frame, out, out);
+
+    return std::move(out);
+}
+
+cv::Mat VideoPlayer::DetectEdge(const cv::Mat& frame) {
+    cv::Mat out;
+    cv::Mat img_grey, img_cny;
+
+    cv::cvtColor(frame, img_grey, cv::COLOR_BGR2GRAY);
+    cv::Canny(img_grey, img_cny, 10, 100, 3, true);
+
+    cv::hconcat(img_grey, img_cny, out);
+
+    return std::move(out);
 }
 
 bool VideoPlayer::Init() {
@@ -68,8 +102,7 @@ bool VideoPlayer::Init() {
 
     // "this" down here shall be pass into OnTrackbarSlide as a void pointer
     cv::createTrackbar(track_bar_name_, window_name_, &slider_position_,
-                       video_info_->frames_,
-                       OnTrackbarSlide, (void*)this);
+                       video_info_->frames_, OnTrackbarSlide, (void*)this);
 
     is_inited_ = true;
     return true;
@@ -87,9 +120,10 @@ void VideoPlayer::DestroyWindow() {
 
 void VideoPlayer::OnTrackbarSlide(int pos, void* ptr) {
     auto that = (VideoPlayer*)ptr;
-    that->cap_ptr_->set(cv::CAP_PROP_POS_FRAMES, pos);
+    that->cap_ptr_->set(cv::CAP_PROP_POS_FRAMES,
+                        pos);  // 设置接下来要读的帧的位置
     if (!that->dontset_) that->run_mode_ = 1;
-    that->dontset_ = 0; // 在拖动进度条后，自动变为步进模式
+    that->dontset_ = 0;  // 在拖动进度条后，自动变为步进模式
     return;
 }
 

@@ -24,12 +24,18 @@
     <ClCompile Include="src\utils\VideoPlayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\utils\VideoWriter.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\utils\ImgShower.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\utils\VideoPlayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\VideoWriter.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
